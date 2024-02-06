@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream> // String stream
 #include <string>
 #include <cmath> // Log function
 
@@ -14,6 +15,7 @@ float NECK;
 float HEIGHT;
 string LIFESTYLE;
 float HIP_SIZE = -1; // May not be initialized in main, but is passed to arg
+vector< vector<string> > USER_DATA;
 
 // Derived information global variables
 pair<int, string> BFP_GROUP;
@@ -389,26 +391,64 @@ void serialize(string filename) {
     out_file.close();
 }
 
-int main() {
+void readFromFile(char* filename) {
 
-    // Getting all relevant user information
-    getUserDetails();
+    // Opening the file in reading mode
+    ifstream in_file(filename);
 
-    // Getting bfp
-    BFP_GROUP = get_bfp(WAIST, NECK, HEIGHT, HIP_SIZE, GENDER, AGE);
+    // Ensure the file actually exists
+    if (!in_file.is_open()) {
+        cout << "Error opening input file.";
+        exit(1);
+    }
+
+    // Looping through each line of the file until the end is reached
+    string line;
+    while(getline(in_file, line)) {
+        vector<std::string> row;
+
+        // Get stream object from row
+        stringstream s(line);
+        string data;
+
+        // Comma delimeters
+        while (getline(s, data, ',')) row.push_back(data);
+
+        // Adding the row to the global user data vector
+        USER_DATA.push_back(row);
+    }
+}
+
+int main(int argc, char* argv[]) {
+
+    // Checking to see if the user passed any arguments
+    if (argc > 1) {
+
+        // Reading user information from file
+        readFromFile(argv[1]);
+
+    // Single user
+    } else {
+
+        // Getting all relevant user information
+        getUserDetails();
+
+        // Getting bfp
+        BFP_GROUP = get_bfp(WAIST, NECK, HEIGHT, HIP_SIZE, GENDER, AGE);
 
 
-    // Getting the required daily calories
-    DAILY_CALORIES = get_daily_calories(AGE, GENDER, LIFESTYLE);
+        // Getting the required daily calories
+        DAILY_CALORIES = get_daily_calories(AGE, GENDER, LIFESTYLE);
 
-    // Meal prepping (modify in place, returns nothing)
-    meal_prep(DAILY_CALORIES, CARBS_NEEDED, PROTEIN_NEEDED, FAT_NEEDED);
+        // Meal prepping (modify in place, returns nothing)
+        meal_prep(DAILY_CALORIES, CARBS_NEEDED, PROTEIN_NEEDED, FAT_NEEDED);
 
-    // All previous variables need to be global, since this function takes no arguments
-    display();
+        // All previous variables need to be global, since this function takes no arguments
+        display();
 
-    // Saving information to a file
-    serialize("output.csv");
+        // Saving information to a file
+        serialize("output.csv");
+    }
 
     return 0;
 } // end main
