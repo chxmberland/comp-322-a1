@@ -1,10 +1,11 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cmath> // Log function
 
 using namespace std;
 
-// Global variables
+// Basic information global variables
 string GENDER;
 int AGE;
 float WEIGHT;
@@ -13,6 +14,13 @@ float NECK;
 float HEIGHT;
 string LIFESTYLE;
 float HIP_SIZE = -1; // May not be initialized in main, but is passed to arg
+
+// Derived information global variables
+pair<int, string> BFP_GROUP;
+int DAILY_CALORIES;
+double CARBS_NEEDED;
+double PROTEIN_NEEDED;
+double FAT_NEEDED;
 
 bool is_number(string input) {
 
@@ -69,7 +77,7 @@ void getUserDetails() {
 
     // Weight
     string weight;
-    cout << "Enter your weight: ";
+    cout << "Enter your weight (kg): ";
     cin >> weight;
 
     // Input validation
@@ -81,7 +89,7 @@ void getUserDetails() {
 
     // Waist
     string waist;
-    cout << "Enter your waist size: ";
+    cout << "Enter your waist size (cm): ";
     cin >> waist;
 
     // Input validation
@@ -93,7 +101,7 @@ void getUserDetails() {
 
     // Neck
     string neck;
-    cout << "Enter your neck size: ";
+    cout << "Enter your neck size (cm): ";
     cin >> neck;
 
     // Input validation
@@ -105,7 +113,7 @@ void getUserDetails() {
 
     // Height
     string height;
-    cout << "Enter your height: ";
+    cout << "Enter your height: (cm) ";
     cin >> height;
 
     // Input validation
@@ -113,6 +121,7 @@ void getUserDetails() {
         cout << "Bad input.";
         exit(1);
     }
+    HEIGHT = stof(height);
 
     // Lifestyle
     string lifestyle;
@@ -132,7 +141,7 @@ void getUserDetails() {
     }
 
     // Secondary input validation
-    if (LIFESTYLE != "sedentary" && LIFESTYLE != "moderate" && LIFESTYLE != "moderately actuve" && LIFESTYLE != "active") {
+    if (LIFESTYLE != "sedentary" && LIFESTYLE != "moderate" && LIFESTYLE != "moderately active" && LIFESTYLE != "active") {
         cout << "Please enter either sedentary, moderate, moderately active or active.";
         exit(1);
     }
@@ -140,7 +149,7 @@ void getUserDetails() {
     // If user is female
     if (GENDER == "female") {
         string hip_size;
-        cout << "Enter your hip size: ";
+        cout << "Enter your hip size (cm): ";
         cin >> hip_size;
 
         if (!is_number(hip_size)) {
@@ -328,13 +337,78 @@ int get_daily_calories(double age, string gender, string lifestyle) {
     return calories;
 } // end get_daily_calories
 
+void meal_prep(int calories_input, double& carbs_output, double& protein_output, double& fat_output) {
+    carbs_output = (calories_input * 0.5) / 4;
+    protein_output = (calories_input * 0.3) / 4;
+    fat_output  = (calories_input * 0.2) / 9;
+} // end meal_prep
+
+void display() {
+    cout << "BFP: " << BFP_GROUP.first << endl;
+    cout << "BFP Group: " << BFP_GROUP.second << endl;
+    cout << "Needed daily calories: " << DAILY_CALORIES << endl;
+    cout << "Carbs needed: " << CARBS_NEEDED << endl;
+    cout << "Protein needed: " << PROTEIN_NEEDED << endl;
+    cout << "Fat needed: " << FAT_NEEDED << endl;
+}
+
+void serialize(string filename) {
+
+    // Constructing file in append mode
+    ofstream out_file(filename, ios::app);
+
+    // Check if the file is open
+    if (!out_file.is_open()) {
+        cout << "Failed to open output file" << endl;
+        exit(1);
+    }
+
+    // Structure to hold data
+    string hip_size = (HIP_SIZE == -1) ? "" : to_string(HIP_SIZE);
+    vector<string> data;
+    data.push_back(GENDER);
+    data.push_back(to_string(AGE));
+    data.push_back(to_string(WEIGHT));
+    data.push_back(to_string(WAIST));
+    data.push_back(to_string(NECK));
+    data.push_back(hip_size);
+    data.push_back(to_string(HEIGHT));
+    data.push_back(LIFESTYLE);
+
+    // Writing the data
+    for (int i = 0; i < data.size(); i++) {
+
+        if (i == data.size() - 1) {
+            out_file << data[i] << "\n";
+
+        } else {
+            out_file << data[i] << ",";
+        }
+    }
+
+    out_file.close();
+}
+
 int main() {
 
     // Getting all relevant user information
     getUserDetails();
 
     // Getting bfp
-    get_bfp(WAIST, NECK, HEIGHT, HIP_SIZE, GENDER, AGE);
+    BFP_GROUP = get_bfp(WAIST, NECK, HEIGHT, HIP_SIZE, GENDER, AGE);
+
+
+    // Getting the required daily calories
+    DAILY_CALORIES = get_daily_calories(AGE, GENDER, LIFESTYLE);
+
+    // Meal prepping (modify in place, returns nothing)
+    meal_prep(DAILY_CALORIES, CARBS_NEEDED, PROTEIN_NEEDED, FAT_NEEDED);
+
+    // All previous variables need to be global, since this function takes no arguments
+    display();
+
+    // Saving information to a file
+    serialize("output.csv");
 
     return 0;
 } // end main
