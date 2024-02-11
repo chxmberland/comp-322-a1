@@ -48,7 +48,7 @@ void getUserDetails() {
     cin >> gender;
 
     // Input validation
-    if (is_number(gender)) {
+    if (gender == "" || is_number(gender)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -71,11 +71,17 @@ void getUserDetails() {
     cin >> age;
     
     // Input validation
-    if (!is_number(age)) {
+    if (age == "" || !is_number(age)) {
         cout << "Bad input.";
         exit(1);
     }
     AGE = stof(age);
+
+    // Second age input validation
+    if (AGE < 0 || AGE > 120) {
+        cout << "Bad input, ensure age is a realistic positive number.";
+        exit(1);
+    }
 
     // Weight
     string weight;
@@ -83,7 +89,7 @@ void getUserDetails() {
     cin >> weight;
 
     // Input validation
-    if (!is_number(weight)) {
+    if (weight == "" || !is_number(weight)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -95,7 +101,7 @@ void getUserDetails() {
     cin >> waist;
 
     // Input validation
-    if (!is_number(waist)) {
+    if (weight == "" || !is_number(waist)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -107,7 +113,7 @@ void getUserDetails() {
     cin >> neck;
 
     // Input validation
-    if (!is_number(neck)) {
+    if (neck == "" || !is_number(neck)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -119,7 +125,7 @@ void getUserDetails() {
     cin >> height;
 
     // Input validation
-    if (!is_number(height)) {
+    if (height == "" || !is_number(height)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -131,7 +137,7 @@ void getUserDetails() {
     cin >> lifestyle;
 
     // Input validation
-    if (is_number(lifestyle)) {
+    if (lifestyle == "" || is_number(lifestyle)) {
         cout << "Bad input.";
         exit(1);
     }
@@ -154,7 +160,7 @@ void getUserDetails() {
         cout << "Enter your hip size (cm): ";
         cin >> hip_size;
 
-        if (!is_number(hip_size)) {
+        if (hip_size == "" || !is_number(hip_size)) {
             cout << "Bad input.";
             exit(1);
         }
@@ -435,7 +441,6 @@ int main(int argc, char* argv[]) {
 
         // Getting bfp
         BFP_GROUP = get_bfp(WAIST, NECK, HEIGHT, HIP_SIZE, GENDER, AGE);
-
 
         // Getting the required daily calories
         DAILY_CALORIES = get_daily_calories(AGE, GENDER, LIFESTYLE);
